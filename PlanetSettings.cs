@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlanetSettings : MonoBehaviour {
 
-	float mass = 100;
+	float mass = 50;
 
 	public Vector3 getLocation() 
 	{
