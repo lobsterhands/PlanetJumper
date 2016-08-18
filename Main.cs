@@ -35,10 +35,13 @@ public class Main : MonoBehaviour {
 		Vector3 objectPos = object_Script.getLocation ();
 		float distance = calcDist_Script.CalcDistance (planetPos, objectPos);
 		float force = calcForce_Script.CalcForce (planet_Script.getMass (), object_Script.getMass (), distance * distance);
-		Vector3 direction = calcDir_Script.calcDir (planetPos, objectPos);
-		direction.x *= force;
-		direction.y *= force;
-		direction.z *= force;
+		Vector3 direction = calcDir_Script.calcDirForce (planetPos, objectPos);
+		float acceleration = force / object_Script.getMass();
+		direction.x *= acceleration;
+		direction.y *= acceleration;
+		direction.z *= acceleration;
 		object_RB.AddForce (direction);
+		object_RB.transform.rotation = Quaternion.FromToRotation (planetPos.normalized, (objectPos - planetPos).normalized);
+
 	}
 }
