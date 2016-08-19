@@ -55,7 +55,8 @@ public class Main : MonoBehaviour {
 		accelerationDueGravity = force / object_Script.getMass();
 		directionGravity.x *= accelerationDueGravity;
 		directionGravity.y *= accelerationDueGravity;
+		directionGravity.z = 0;
 		object_RB.AddForce (directionGravity);
-		object_RB.transform.rotation = Quaternion.FromToRotation (planetPos.normalized, (objectPos - planetPos).normalized);
+		object_RB.transform.rotation = Quaternion.FromToRotation (Vector3.up, (planetPos - objectPos).normalized);
 	}
 }

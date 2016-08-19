@@ -9,7 +9,6 @@ public class CalculateDirection : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		calcDist_Script = this.GetComponent<CalculateDistance> ();
-		Debug.Log ("CalcDist: " + calcDist_Script);
 	}
 
 	public Vector3 calcDirForce(Vector3 A, Vector3 B)

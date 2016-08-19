@@ -22,26 +22,25 @@ public class Movement : MonoBehaviour {
 		planet_Script = planet_GO.GetComponent<PlanetSettings> ();
 		planetPos = planet_Script.getLocation ();
 
-		Debug.Log("Planet pos: " + planetPos);
-		Debug.Log ("This pos: " + this.gameObject.transform.position);
-
 		RB = this.GetComponent<Rigidbody> ();
 
 		QualitySettings.vSyncCount = 0;
 
 		calcDir_Script = this.gameObject.GetComponent<CalculateDirection> ();
-		Debug.Log (calcDir_Script);
-
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
 		var x = Input.GetAxis ("Horizontal") * Time.deltaTime * speed;
-		transform.Translate (-x, 0, 0);
+		if (planetPos.y >= 0) {
+			transform.Translate (x, 0, 0);
+		} else {
+			transform.Translate (-x, 0, 0);
+		}
 
 		if (!isJumping) {
-			if (Input.GetButton ("Jump")) {
+			if (Input.GetButtonDown ("Jump")) {
 				isJumping = true;
 				jumpDir = calcDir_Script.calcDirPlayer (planetPos, this.gameObject.transform.position);
 				RB.AddForce (jumpDir * 1300);
