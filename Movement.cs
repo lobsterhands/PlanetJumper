@@ -4,81 +4,66 @@ using System.Collections.Generic;
 
 public class Movement : MonoBehaviour {
 
-	const float PLAYER_MASS = 2f;
+	const float PLAYER_MASS = 1f;
 	float speed = 10;
-	const float GRAVITY = 100f;
+	float jumpForce = 1000f;
 
 	public List<GameObject> planets;
 
-	GameObject planet_GO;
-	PlanetSettings planet_Script;
-	Vector3 planetPos;
+	GameObject currentPlanet;
 
 	Rigidbody RB;
 
 	CalculateDirection calcDir_Script;
 	Vector3 jumpDir;
 
-	bool isJumping = false;
+	bool isJumping = true;
 
 	// Use this for initialization
 	void Start () {
-		planet_GO = GameObject.FindGameObjectWithTag("Planet");
-		planet_Script = planet_GO.GetComponent<PlanetSettings> ();
-		planetPos = planet_Script.getLocation ();
-
-		RB = this.GetComponent<Rigidbody> ();
-
+		RB = this.gameObject.GetComponent<Rigidbody> ();
 		QualitySettings.vSyncCount = 0;
-
-		calcDir_Script = this.gameObject.GetComponent<CalculateDirection> ();
-
-		foreach (GameObject x in planets) {
-			Debug.Log (x.transform.position);
-		}
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
-		var x = Input.GetAxis ("Horizontal") * Time.deltaTime * speed;
-		if (planetPos.y >= 0) {
-			transform.Translate (x, 0, 0);
-		} else {
-			transform.Translate (-x, 0, 0);
-		}
+		if (currentPlanet != null) {
+			var x = Input.GetAxis ("Horizontal") * Time.deltaTime * speed;
+			transform.Translate(-x, 0, 0); // Unsure why -x is necessary, but it currently is
 
-		if (!isJumping) {
-			if (Input.GetButtonDown ("Jump")) {
-				isJumping = true;
-				jumpDir = calcDir_Script.calcDirPlayer (planetPos, this.gameObject.transform.position);
-				RB.AddForce (jumpDir * 1300);
+			if (!isJumping) {
+				if (Input.GetButtonDown ("Jump")) {
+					jumpDir = calcDirPlayer (currentPlanet.transform.position, this.gameObject.transform.position);
+					RB.AddForce (jumpDir * jumpForce);
+					isJumping = true;
+				}
 			}
 		}
-
 	}
 
-	float maxForce = 0;
+	// FixedUpdate
+	float maxForceGravity;
+	float acceleration;
+	Vector3 directionGravity;
 	void FixedUpdate()
 	{
+		maxForceGravity = 0;
 		foreach (GameObject planet in planets) {
-
+			float forceGravity = CalcForce (planet, this.gameObject);
+			if ( forceGravity >= maxForceGravity) {
+				maxForceGravity = forceGravity;
+				acceleration = maxForceGravity / PLAYER_MASS;
+				directionGravity = calcDirForce (planet.transform.position, this.transform.position);
+				RB.AddForce (directionGravity * acceleration);
+				RB.transform.rotation = Quaternion.FromToRotation (Vector3.up, (planet.transform.position - this.transform.position).normalized);
+			}
 		}
-//		distance = calcDist_Script.CalcDistance (planetPos, objectPos);
-//		force = calcForce_Script.CalcForce (planet_Script.getMass (), object_Script.getMass (), distance * distance);
-//		directionGravity = calcDir_Script.calcDirForce (planetPos, objectPos);
-//		accelerationDueGravity = force / object_Script.getMass();
-//
-//		directionGravity.x *= accelerationDueGravity;
-//		directionGravity.y *= accelerationDueGravity;
-//		directionGravity.z = 0;
-//
-//		object_RB.AddForce (directionGravity);
-//		object_RB.transform.rotation = Quaternion.FromToRotation (Vector3.up, (planetPos - objectPos).normalized);
 	}
 
 	void OnCollisionEnter(Collision collision) {
 		isJumping = false;
+		currentPlanet = collision.gameObject;
 	}
 
 	Vector3 calcDirForce(Vector3 A, Vector3 B)
@@ -115,20 +100,15 @@ public class Movement : MonoBehaviour {
 
 		return Mathf.Sqrt (X*X + Y*Y + Z*Z);
 	}
-		
-	public float CalcForce(float massA, float massB, float distanceSquared) 
+
+	public float CalcForce(GameObject planet, GameObject player)
 	{
-		// F = ma = (gravity * m1 * m2) / r^2);
-		float force = ((GRAVITY * massA * massB) / distanceSquared);
+		PlanetSettings planet_script = planet.GetComponent<PlanetSettings> ();
+
+		Vector3 planetPos = planet.transform.position;
+		Vector3 playerPos = player.transform.position;
+		float distance = (planetPos - playerPos).magnitude;
+		float force = ((planet_script.getMass() * PLAYER_MASS) / (distance * distance));
 		return force;
 	}
-
-//	public float CalcForce(GameObject planet, GameObject player)
-//	{
-//		Vector3 planetPos = planet.transform.position;
-//		Vector3 playerPos = player.transform.position;
-//
-//		float distance = (planetPos - playerPos).magnitude;
-//		float force = ((GRAVITY * planet.getMass() * PLAYER_MASS) / distance * distance);
-//	}
 }

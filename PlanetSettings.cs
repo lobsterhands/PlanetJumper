@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlanetSettings : MonoBehaviour {
 
-	float mass = 50; // make this public and have unique mass for each planet?? How does unity values override script?
+	public float mass; // make this public and have unique mass for each planet?? How does unity values override script?
 
 	public Vector3 getLocation() 
 	{
